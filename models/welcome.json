@@ -1,0 +1,71 @@
+ {
+    "welcomeMessages": [
+        {
+            "id": 1,
+            "title": "Discover the Latest Trends",
+            "subtitle": "Shop the best fashion and lifestyle products."
+        },
+        {
+            "id": 2,
+            "title": "New Season, New Style",
+            "subtitle": "Upgrade your wardrobe with our latest arrivals."
+        },
+        {
+            "id": 3,
+            "title": "Exclusive Deals Just for You",
+            "subtitle": "Enjoy amazing discounts on your favorite products."
+        },
+        {
+            "id": 4,
+            "title": "Step into a World of Elegance",
+            "subtitle": "Find unique pieces that match your style."
+        },
+        {
+            "id": 5,
+            "title": "Quality and Comfort Combined",
+            "subtitle": "Shop premium products that guarantee satisfaction."
+        },
+        {
+            "id": 6,
+            "title": "Your Style, Your Identity",
+            "subtitle": "Express yourself with our curated collection."
+        }
+    ],
+    
+    "WhyChooseUs": [
+        { 
+            "id": 1,
+            "title": "High-Quality, Durable Products",
+            "description": "Cooking tools experience frequent use, so customers need heat-resistant, rust-proof, and long-lasting equipment. Highlight stainless steel, non-stick coatings, BPA-free silicone, and reinforced handles in your product descriptions."
+        },
+        { 
+            "id": 2,
+            "title": "Time-Saving & Efficient Designs",
+            "description": "Modern kitchens demand ergonomic, multi-functional tools that save time. Offer electric choppers, non-stick cookware, fast-boiling kettles, and precision thermometers to attract busy home cooks and professionals"
+        },
+        { 
+            "id": 3,
+            "title": "Professional & Chef-Grade Options",
+            "description": "Many home chefs want to elevate their cooking skills with pro-grade tools. Provide Japanese chef knives, cast iron skillets, sous-vide cookers, and digital kitchen scales to appeal to serious cooks."
+        },
+        { 
+            "id": 4,
+            "title": "Exclusive Deals & Bundles",
+            "description": "Customers love getting value for money. Offer knife sets, baking kits, or cookware combos at a discounted rate compared to buying individually. Flash sales on premium tools can boost purchases."
+        },
+        { 
+            "id": 5,
+            "title": "Safe & Eco-Friendly Materials",
+            "description": "Health-conscious buyers prefer non-toxic, food-safe, and eco-friendly materials. Promote PFOA-free non-stick pans, wooden or bamboo utensils, and glass food containers as safer alternatives to plastic."
+        },
+        { 
+            "id": 6,
+            "title": "Fast Shipping & Easy Returns",
+            "description": "Kitchen tools are often urgent purchases. Offer next-day or express shipping and hassle-free returns to ensure customers get their tools quickly without worry."
+        }
+    ]
+}
+
+
+
+
