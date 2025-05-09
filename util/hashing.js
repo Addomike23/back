@@ -1,4 +1,4 @@
-const { hash, compare } = require('bcrypt')
+const { hash, compare } = require("bcryptjs")
 const { createHmac } = require('node:crypto')
 
 // hash password controller

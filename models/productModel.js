@@ -31,7 +31,17 @@ const productSchema = new mongoose.Schema({
     },
 },{timestamps: true})
 
+const productCategorySchema = new mongoose.Schema({
+    image: {
+        type: String,
+        require: true
+    },
+    category: {
+        type: String,
+        require: true
+    }
+},{timestamps: true})
 
-
-const productModel = mongoose.model("product", productSchema)
-module.exports = productModel
+const product = mongoose.model("product", productSchema)
+const productCategory = mongoose.model("category", productCategorySchema)
+module.exports = {productCategory, product}

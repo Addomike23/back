@@ -1,23 +1,50 @@
-const product = require("../models/productModel")
+const { product, productCategory } = require("../models/productModel")
 const latestProduct = require("../models/latestProduct")
 const fs = require("fs");
 
 
 
+// products Category Controller
+const productCategoryController = async (req, res) => {
+    // destruct data from request body
+    const { image, name } = req.body
+
+    // validate data
+    if (!image || !name) {
+        return res.status(401).json({ message: "Please all input field are required" })
+    }
+
+    // create category object
+    const Category = new productCategory({
+        image: image,
+        name: name
+    })
+
+    // save data in DB
+    await Category.save();
+    // send response headers
+    res.status(201).json({ success: true, message: "Category successfully created" })
+
+    try {
+
+    } catch (error) {
+        res.status(401).json({ success: false, message: "Internal error" })
+    }
+}
+
+
 // add product controller function
-
-
 
 const createProduct = async (req, res) => {
     let image = `${req.file.filename}`
     // get products details from req body
     const { name, description, category, price, stock } = req.body
-    
-    
-    
+
+
+
 
     // check if all details are intact
-    if ( !image || !name || !description || !category || !price || !stock) {
+    if (!image || !name || !description || !category || !price || !stock) {
         return res.status(400).json({ message: 'All fields are required' })
 
     }
@@ -34,7 +61,7 @@ const createProduct = async (req, res) => {
     })
 
     try {
-        
+
         // save new product
         await newProduct.save();
         res.status(201).json({ sucess: "true", message: 'new product created successfully', newProduct })
@@ -49,12 +76,12 @@ const createLatestProduct = async (req, res) => {
     let image = `${req.file.filename}`
     // get products details from req body
     const { name, description, category, price, stock } = req.body
-    
-    
-    
+
+
+
 
     // check if all details are intact
-    if ( !image || !name || !description || !category || !price || !stock) {
+    if (!image || !name || !description || !category || !price || !stock) {
         return res.status(400).json({ message: 'All fields are required' })
 
     }
@@ -71,7 +98,7 @@ const createLatestProduct = async (req, res) => {
     })
 
     try {
-        
+
         // save new product
         await newProduct.save();
         res.status(201).json({ sucess: "true", message: 'new product created successfully', newProduct })
@@ -93,7 +120,7 @@ const fetchProduct = async (req, res) => {
         res.status(200).json({
             success: true,
             products: products
-          });
+        });
 
     } catch (error) {
         console.error("Error fetching products:", error); // Log the error for debugging
@@ -113,7 +140,7 @@ const fetchLatestProduct = async (req, res) => {
         res.status(200).json({
             success: true,
             products: products
-          });
+        });
 
     } catch (error) {
         console.error("Error fetching products:", error); // Log the error for debugging
@@ -151,7 +178,7 @@ const fetchOneProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     const { id } = req.params;
-    const {name, description, category, stock, datePublished } = req.body;
+    const { name, description, category, stock, datePublished } = req.body;
     const image = req.file ? req.file.path : null; // Store image path
 
     if (!id) {
@@ -164,7 +191,7 @@ const updateProduct = async (req, res) => {
 
 
     try {
-        const updatedProduct = await product.findByIdAndUpdate(id, {image, name, description, category, stock, datePublished }, { new: true });
+        const updatedProduct = await product.findByIdAndUpdate(id, { image, name, description, category, stock, datePublished }, { new: true });
         if (!updatedProduct) {
             return res.status(404).json({ message: 'Product not found' })
         }
@@ -191,9 +218,9 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' })
         }
         // delete image from uploads folder
-        fs.unlink(`uploads/${deletedProduct.image}`, ()=>{})
-        
-        res.status(200).json({success: "true", message: 'Product deleted successfully'})
+        fs.unlink(`uploads/${deletedProduct.image}`, () => { })
+
+        res.status(200).json({ success: "true", message: 'Product deleted successfully' })
 
     } catch (error) {
         console.log(error);
@@ -210,5 +237,6 @@ module.exports = {
     fetchOneProduct,
     updateProduct,
     deleteProduct,
-   fetchLatestProduct
+    fetchLatestProduct,
+    productCategoryController
 }
