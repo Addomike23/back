@@ -20,29 +20,34 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://front-ymd5.onrender.com/"];
-// const allowedOrigins = "https://front-ymd5.onrender.com/"
+const cors = require('cors');
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://front-ymd5.onrender.com"
+];
+
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
     } else {
-      return callback(new Error("Not allowed by CORS"));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  methods: "GET,POST,PUT,DELETE,PATCH",
-  allowedHeaders: "Content-Type,Authorization"
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 
 app.use(
   "/images",
   express.static("uploads", {
     setHeaders: (res, path, stat) => {
-      res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com/"); // ✅ only one string
+      res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com"); // ✅ only one string
       res.setHeader("Access-Control-Allow-Credentials", "true");
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       // res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
@@ -54,7 +59,7 @@ app.use(
   "/profile",
   express.static("profilePic", {
     setHeaders: (res, path, stat) => {
-      res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com/"); // ✅ only one string
+      res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com"); // ✅ only one string
       res.setHeader("Access-Control-Allow-Credentials", "true");
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       // res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
