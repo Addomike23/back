@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-const cors = require('cors');
+
 
 const allowedOrigins = [
   "http://localhost:5173",
