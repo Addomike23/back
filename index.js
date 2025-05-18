@@ -3,6 +3,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const bodyParser = require("body-parser")
 const helmet = require('helmet');
 const mongoose = require('mongoose');
 const authRouter = require('./routers/authRouter');
@@ -15,6 +16,7 @@ const payStackRouter = require("./routers/payStackRouter")
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(bodyParser())
 app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 
@@ -88,7 +90,7 @@ app.use('/auth', authRouter);
 app.use('/api', productRouter)
 app.use('/api', subscribeRoute)
 app.use('/api', testimonialRouter)
-app.use('/api', payStackRouter)
+app.use('/api', bodyParser.raw({ type: 'application/json' }), payStackRouter)
 
 
 

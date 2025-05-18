@@ -4,8 +4,8 @@ const {  orderPaystack,
     paystackWebhookHandler,} = require("../controllers/payStackController")
 const identifyUser = require("../middlewares/identifyUser")
 
-payStackRouter.post('/paystack/verify/:reference', identifyUser,orderPaystack)
-payStackRouter.post('/paystack/webhook', express.json({ type: '*/*' }), paystackWebhookHandler);
+payStackRouter.post('/paystack/verify/:reference', orderPaystack)
+payStackRouter.post('/paystack/webhook/', paystackWebhookHandler);
 
 
 
