@@ -150,25 +150,108 @@ const fetchLatestProduct = async (req, res) => {
 
 // fetch one product
 
-const fetchOneProduct = async (req, res) => {
-    const { id } = req.params;
-
+const fetchProducts = async (req, res) => {
     try {
-        // Validate ID format
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid product ID' });
+        const {
+            category = "",
+            search = "",
+            sort = "relevancy",
+            page = 1,
+            limit = 10,
+        } = req.query;
+
+        const query = {};
+
+        // --- Filter: Category ---
+        if (category) {
+            query.category = { $regex: new RegExp(category, "i") }; // Case-insensitive match
         }
 
-        const targetProduct = await product.findById(id); // Ensure 'Product' is correctly imported
-
-        if (!targetProduct) {
-            return res.status(404).json({ success: false, message: 'Product not found' });
+        // --- Filter: Search in name or description ---
+        if (search) {
+            query.$or = [
+                { name: { $regex: new RegExp(search, "i") } },
+                { description: { $regex: new RegExp(search, "i") } },
+            ];
         }
 
-        res.status(200).json({ success: true, message: 'Product found', product: targetProduct });
+        // --- Sorting Options ---
+        let sortOption = {};
+        switch (sort) {
+            case "price_low":
+                sortOption.price = 1;
+                break;
+            case "price_high":
+                sortOption.price = -1;
+                break;
+            case "newest":
+                sortOption.createdAt = -1;
+                break;
+            case "oldest":
+                sortOption.createdAt = 1;
+                break;
+            case "stock_high":
+                sortOption.stock = -1;
+                break;
+            case "stock_low":
+                sortOption.stock = 1;
+                break;
+            case "relevancy":
+            default:
+                sortOption = {}; // Default: no explicit sorting
+        }
+
+        // --- Pagination ---
+        const currentPage = Math.max(parseInt(page), 1);
+        const itemsPerPage = Math.max(parseInt(limit), 1);
+        const skip = (currentPage - 1) * itemsPerPage;
+
+        // --- Fetch Products and Count ---
+        const [products, total] = await Promise.all([
+            product.find(query).sort(sortOption).skip(skip).limit(itemsPerPage),
+            product.countDocuments(query),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            products,
+            page: currentPage,
+            limit: itemsPerPage,
+            totalResults: total,
+            totalPages: Math.ceil(total / itemsPerPage),
+        });
 
     } catch (error) {
-        console.error("Error fetching product:", error);
+        console.error("Fetch products error:", error.message);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// product details
+
+const productDetails = async (req, res) => {
+    try {
+      const product = await Product.findById(req.params.id);
+      if (!product) return res.status(404).json({ message: "Product not found" });
+      res.json(product);
+    } catch (err) {
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  
+  
+
+// SINGLE PRODUCT CONTROLLER
+const fetchOneProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const singleProduct = await product.findById(id);
+        if (!singleProduct) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+        res.status(200).json({ success: true, product: singleProduct });
+    } catch (error) {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
@@ -234,9 +317,10 @@ module.exports = {
     createProduct,
     createLatestProduct,
     fetchProduct,
-    fetchOneProduct,
+    fetchProducts,
     updateProduct,
     deleteProduct,
+    productDetails,
     fetchLatestProduct,
     productCategoryController
 }

@@ -34,7 +34,7 @@ const signup = async (req, res) => {
 
 
         // Generate OTP
-        const codeValue = Math.floor(100000 + Math.random() * 900000).toString(); // Ensures 6 digits
+        const codeValue = Math.floor(100000 + Math.random() * 1000000).toString(); // Ensures 6 digits
         // Hash the provided code
         const hashedProvidedCode = hmacProcess(codeValue, process.env.HMAC_KEY);
         // Create user in DB
@@ -92,7 +92,7 @@ const signup = async (req, res) => {
             });
 
     } catch (error) {
-        
+
         res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -104,70 +104,53 @@ const signup = async (req, res) => {
 
 // sigin controller
 const signin = async (req, res) => {
-    // get email and password from the req body
     const { email, password } = req.body;
-
+  
     try {
-        // validate signin crudentials with signinSchema
-        const { error, value } = signinSchema.validate({ email, password })
-
-        //    send validate error message object to client
-        if (error) {
-            return res.status(401).json({ success: false, message: error.details[0].message });
-        }
-
-        // find user in database and fetch info without password info
-        const existIngUser = await userModel.findOne({ email }).select("+password")
-
-        // send response if user not found
-        if (!existIngUser) {
-            return res.status(401).
-                json({ success: false, message: 'Oops!, User does not exist' });
-        }
-
-        // compare user password with bcrypt compare function
-        const verifyPass = await verifyPassword(password, existIngUser.password);
-
-        // send response if password does not match
-        if (!verifyPass) {
-
-            return res.status(401).
-                json({ success: false, message: 'Oops!, Incorrect password' });
-        }
-
-
-
-        // send signin token to client
-        const signinToken = await webToken.sign({
-            userId: existIngUser._id,
-            email: existIngUser.email,
-            verified: existIngUser.verified
-        },
-            // pass token here
-            process.env.SECRET_TOKEN, { expiresIn: '8h' });
-
-        // send token response to client
-        res.cookie("Authorization", "Bearer" + signinToken,
-            {
-                expires: new Date(Date.now() + 8 * 3600000),
-                httpOnly: process.env.NODE_ENV === 'production',
-                secure: process.env.NODE_ENV === 'production'
-            }
-        ).json({
-            success: true,
-            signinToken,
-            message: "Logged in successfully"
+      const { error } = signinSchema.validate({ email, password });
+  
+      if (error) {
+        console.log(error.details[0].message);
+        
+        return res.status(401).json({ success: false, message: error.details[0].message });
+      }
+  
+      const existingUser = await userModel.findOne({ email }).select("+password");
+  
+      if (!existingUser) {
+        return res.status(401).json({ success: false, message: "Oops!, User does not exist" });
+      }
+  
+      const verifyPass = await verifyPassword(password, existingUser.password);
+  
+      if (!verifyPass) {
+        return res.status(401).json({ success: false, message: "Oops!, Incorrect password" });
+      }
+  
+      const signinToken = await webToken.sign({
+        userId: existingUser._id,
+        email: existingUser.email,
+        verified: existingUser.verified
+      }, process.env.SECRET_TOKEN, { expiresIn: "8h" });
+  
+      return res
+        .cookie("Authorization", "Bearer " + signinToken, {
+          expires: new Date(Date.now() + 8 * 3600000),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production"
         })
-
+        .json({
+          success: true,
+          signinToken,
+          message: "Logged in successfully"
+        });
+  
     } catch (error) {
-
-        // if there is an error, return an error message
-        console.log(error);
-        res.status(500).json({ message: 'Internal server error' });
-
+      console.error("Signin Error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-}
+  };
+  
 
 
 
@@ -181,7 +164,10 @@ const signout = async (req, res) => {
 // send verification code to client
 const sendVerificationCode = async (req, res) => {
     const { email } = req.body;
-    // find user in database
+    
+
+    try {
+           // find user in database
     const existIngUser = await userModel.findOne({ email });
     // send response if user not found
     if (!existIngUser) {
@@ -195,11 +181,12 @@ const sendVerificationCode = async (req, res) => {
     }
     // generate code for user
     const codeValue = Math.floor(Math.random() * 1000000).toString();
-
+    const hashCodeValue = hmacProcess(codeValue, process.env.HMAC_KEY);
+   
     // send code to user email
     let mailOptions = await transporter.sendMail({
         from: process.env.EMAIL,
-        to: existingUser.email,
+        to: existIngUser.email,
         subject: "Verification Code from Michael's App",
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center;">
@@ -208,7 +195,7 @@ const sendVerificationCode = async (req, res) => {
                 <div style="font-size: 24px; font-weight: bold; color: #333; background: #f4f4f4; padding: 10px; display: inline-block; border-radius: 5px; margin: 10px 0;">
                     ${codeValue}
                 </div>
-                <p style="font-size: 16px; color: #555;">This code expires in <strong>5 minutes</strong>.</p>
+                <p style="font-size: 16px; color: #555;">This code expires in <strong>1 minutes</strong>.</p>
                 <p style="font-size: 14px; color: #888;">If you did not request this code, please ignore this email.</p>
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
                 <p style="font-size: 12px; color: #aaa;">&copy; ${new Date().getFullYear()} Michael's App. All rights reserved.</p>
@@ -219,15 +206,19 @@ const sendVerificationCode = async (req, res) => {
 
     // send response if code is sent successfully
     if (mailOptions.accepted[0] === existIngUser.email) {
-        const hashCodeValue = hmacProcess(codeValue, process.env.HMAC_KEY);
         existIngUser.verificationCode = hashCodeValue;
         existIngUser.verificationCodeValidation = Date.now()
         await existIngUser.save();
-        return res.status(200).json({ success: true, message: "Verification code sent successfully" });
     }
-
-    // send response if code is not sent
+    // Send token and success message in a **single response**
+    return res.status(200).json({ success: true, message: "Verification code sent to your mail" });
+    
+    } catch (error) {
+         // send response if code is not sent
     return res.status(400).json({ success: false, message: "Code sent failed" });
+    }
+ 
+   
 }
 
 
@@ -236,7 +227,6 @@ const sendVerificationCode = async (req, res) => {
 const verifyUser = async (req, res) => {
     try {
         const { email, providedCode } = req.body;
-        console.log(providedCode);
 
 
         // Validate input
@@ -257,7 +247,7 @@ const verifyUser = async (req, res) => {
         }
 
         // Check if code has expired (5 min expiration)
-        if (Date.now() - user.verificationCodeValidation > 5 * 60 * 1000) {
+        if (Date.now() - user.verificationCodeValidation > 2 * 60 * 1000) {
             return res.status(401).json({ success: false, message: "Verification code has expired" });
         }
 

@@ -117,28 +117,28 @@ exports.verifyForgotPasswordSchema = joi.object({
 
 
 const contactusMessage = joi.object({
-  name: joi.string().required().messages({
-    "string.empty": "Please provide your name",
-    "any.required": "Name is required"
-  }),
-  email: joi.string()
-    .min(6)
-    .max(60)
-    .email({ tlds: { allow: ["com", "net"] } })
-    .required()
-    .messages({
-      "string.empty": "Please provide your email",
-      "string.email": "Please provide a valid email address",
-      "any.required": "Email is required"
+    name: joi.string().required().messages({
+        "string.empty": "Please provide your name",
+        "any.required": "Name is required"
     }),
-  message: joi.string().required().messages({
-    "string.empty": "Please provide your message",
-    "any.required": "Message is required"
-  }),
+    email: joi.string()
+        .min(6)
+        .max(60)
+        .email({ tlds: { allow: ["com", "net"] } })
+        .required()
+        .messages({
+            "string.empty": "Please provide your email",
+            "string.email": "Please provide a valid email address",
+            "any.required": "Email is required"
+        }),
+    message: joi.string().required().messages({
+        "string.empty": "Please provide your message",
+        "any.required": "Message is required"
+    }),
 });
 
 
 
 
 
-module.exports = {contactusMessage, verifyEmail, signupSchema, signinSchema, verifyCodeSchema, changePasswordSchema, changeEmailSchema };
+module.exports = { contactusMessage, verifyEmail, signupSchema, signinSchema, verifyCodeSchema, changePasswordSchema, changeEmailSchema };

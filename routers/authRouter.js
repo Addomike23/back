@@ -22,10 +22,10 @@ router.post("/signin", signin)
 router.post('/signout', identifyUser, signout)
 
 // send verification code route
-router.patch("/send-verification-code",identifyUser, sendVerificationCode)
+router.patch("/send-verification-code",sendVerificationCode)
 
 // verify code route
-router.patch("/verify-code", verifyUser);
+router.patch("/verify-code",verifyUser);
 
 // change password route
 router.patch("/change-password", identifyUser, changePassword);

@@ -3,7 +3,8 @@ const productRouter = express.Router();
 const { createProduct,
     createLatestProduct,
     fetchProduct,
-    fetchOneProduct,
+    fetchProducts,
+    productDetails,
     updateProduct,
     deleteProduct,
 fetchLatestProduct } = require("../controllers/productController")
@@ -32,13 +33,16 @@ productRouter.get("/latest-product", fetchLatestProduct)
 productRouter.get('/products', fetchProduct)
 
 // // fetch one product
-productRouter.get('/target/:id', fetchOneProduct)
+productRouter.get('/filter',fetchProducts)
 
 // // updateProduct 
 productRouter.put('/update/:id', updateProduct)
 
 // // delete product
 productRouter.delete('/delete/:id', deleteProduct)
+
+// product details route
+productRouter.get("/product/:id", productDetails)
 
 
 module.exports = productRouter;
