@@ -2,7 +2,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const Order = require('../models/paystackOrderModel');
 const {product} = require('../models/productModel');
-const PAYSTACK_LIVE_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_LIVE_SECRET_KEY = process.env.PAYSTACK_LIVE_SECRET_KEY;
 
 // ============ Payment Verification Endpoint ============
 const orderPaystack = async (req, res) => {
