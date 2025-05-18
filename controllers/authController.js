@@ -7,6 +7,8 @@ const userModel = require('../models/userModel');
 const { dohash, verifyPassword, hmacProcess } = require('../util/hashing');
 const webToken = require('jsonwebtoken')
 const transporter = require('../middlewares/sendMail')
+
+
 // var nodemailer = require('nodemailer');
 
 // authentication controller
@@ -17,46 +19,51 @@ const signup = async (req, res) => {
     const { name, email, password } = req.body;
 
     try {
-        // Validate user input
+        // 1. Validate input
         const { error } = signupSchema.validate({ name, email, password });
         if (error) {
-            return res.status(401).json({ success: false, message: error.details[0].message });
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message,
+            });
         }
 
-        // Check if user exists
+        // 2. Check if user already exists
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
-            return res.status(401).json({ success: false, message: "Email already exists" });
+            return res.status(409).json({
+                success: false,
+                message: "Email already exists",
+            });
         }
 
-        // Hash password
-        const hashPassword = await dohash(password, 10);
+        // 3. Hash password
+        const hashedPassword = await dohash(password, 10);
 
+        // 4. Generate 6-digit OTP and hash it
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtp = hmacProcess(otp, process.env.HMAC_KEY);
 
-        // Generate OTP
-        const codeValue = Math.floor(100000 + Math.random() * 1000000).toString(); // Ensures 6 digits
-        // Hash the provided code
-        const hashedProvidedCode = hmacProcess(codeValue, process.env.HMAC_KEY);
-        // Create user in DB
+        // 5. Create and save user
         const newUser = new userModel({
             name,
             email,
-            password: hashPassword,
-            verificationCode: hashedProvidedCode,
+            password: hashedPassword,
+            verificationCode: hashedOtp,
             verificationCodeValidation: Date.now(),
         });
 
-        const result = await newUser.save();
-        result.password = undefined;
+        const savedUser = await newUser.save();
+        savedUser.password = undefined;
 
-        // Generate token
-        const signinToken = await webToken.sign(
-            { userId: result._id },
+        // 6. Generate JWT token
+        const token = await webToken.sign(
+            { userId: savedUser._id },
             process.env.SECRET_TOKEN,
             { expiresIn: "2d" }
         );
 
-        // Send OTP to user email
+        // 7. Send OTP email
         await transporter.sendMail({
             from: process.env.EMAIL,
             to: email,
@@ -66,36 +73,38 @@ const signup = async (req, res) => {
                     <h2 style="color: #007bff;">Your Verification Code</h2>
                     <p style="font-size: 18px; color: #333;">Use the code below to verify your account:</p>
                     <div style="font-size: 24px; font-weight: bold; color: #333; background: #f4f4f4; padding: 10px; display: inline-block; border-radius: 5px; margin: 10px 0;">
-                        ${codeValue}
+                        ${otp}
                     </div>
-                    <p style="font-size: 16px; color: #555;">This code expires in <strong>5 minutes</strong>.</p>
+                    <p style="font-size: 16px; color: #555;">This code expires in <strong>1 minutes</strong>.</p>
                     <p style="font-size: 14px; color: #888;">If you did not request this code, please ignore this email.</p>
-                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-                    <p style="font-size: 12px; color: #aaa;">&copy; ${new Date().getFullYear()} Michael's App. All rights reserved.</p>
                 </div>
             `,
         });
 
-        // Send token and success message in a **single response**
+        // 8. Set token cookie and return response
         return res
-            .cookie("Authorization", "Bearer " + signinToken, {
-                expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days,
+            .cookie("Authorization", "Bearer " + token, {
+                expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
                 httpOnly: process.env.NODE_ENV === "production",
                 secure: process.env.NODE_ENV === "production",
+                sameSite: "Lax",
             })
             .status(201)
             .json({
                 success: true,
                 message: "Your account has been created successfully. OTP sent to email.",
-                signinToken,
-                data: result,
+                data: savedUser,
             });
 
-    } catch (error) {
-
-        res.status(500).json({ message: "Internal server error" });
+    } catch (err) {
+        console.error("Signup Error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong. Please try again later.",
+        });
     }
 };
+
 
 
 
@@ -224,10 +233,10 @@ const sendVerificationCode = async (req, res) => {
 
 
 
+
 const verifyUser = async (req, res) => {
     try {
         const { email, providedCode } = req.body;
-
 
         // Validate input
         const { error } = verifyCodeSchema.validate({ email, providedCode });
@@ -235,7 +244,7 @@ const verifyUser = async (req, res) => {
             return res.status(400).json({ success: false, message: error.details[0].message });
         }
 
-        // Find user in the database (Include hidden fields)
+        // Find user (including hidden fields)
         const user = await userModel.findOne({ email }).select("+verificationCode +verificationCodeValidation");
 
         if (!user) {
@@ -246,26 +255,42 @@ const verifyUser = async (req, res) => {
             return res.status(401).json({ success: false, message: "Verification code not found" });
         }
 
-        // Check if code has expired (5 min expiration)
-        if (Date.now() - user.verificationCodeValidation > 2 * 60 * 1000) {
+        // Check code expiration
+        if (Date.now() - user.verificationCodeValidation > 1 * 60 * 1000) {
             return res.status(401).json({ success: false, message: "Verification code has expired" });
         }
 
-        // Hash the provided code
+        // Compare hashed code
         const hashedProvidedCode = hmacProcess(providedCode, process.env.HMAC_KEY);
-
-        // Compare provided code with stored hashed code
         if (hashedProvidedCode !== user.verificationCode) {
             return res.status(401).json({ success: false, message: "Incorrect verification code" });
         }
 
-        // Update user as verified
+        // Mark user as verified and remove code fields
         user.verified = true;
         user.verificationCode = undefined;
         user.verificationCodeValidation = undefined;
         await user.save();
 
-        return res.status(200).json({ success: true, message: "User verified successfully" });
+        // Generate JWT
+        const tokenPayload = { id: user._id, email: user.email };
+        const token = webToken.sign(tokenPayload, process.env.SECRET_TOKEN, {
+            expiresIn: "2d"
+        });
+
+        // Set cookie
+        res.cookie("Authorization", `Bearer ${token}`, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // use true in production
+            sameSite: "Lax",
+            expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days
+        });
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "User verified successfully", 
+             // optional: in case frontend needs to show or log it
+        });
 
     } catch (error) {
         console.error("Verification error:", error);
