@@ -21,8 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://front-ymd5.onrender.com/"];
-// const allowedOrigins = "https://front-ymd5.onrender.com/"
+// const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://front-ymd5.onrender.com/"];
+const allowedOrigins = "https://front-ymd5.onrender.com/"
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl)
@@ -46,7 +46,7 @@ app.use(
       res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com/"); // ✅ only one string
       res.setHeader("Access-Control-Allow-Credentials", "true");
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
+      // res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
     },
   })
 );
@@ -58,7 +58,7 @@ app.use(
       res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com/"); // ✅ only one string
       res.setHeader("Access-Control-Allow-Credentials", "true");
       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
+      // res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
     },
   })
 );
