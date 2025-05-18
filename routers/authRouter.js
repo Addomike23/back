@@ -11,7 +11,12 @@ const { signup,
 
 const identifyUser = require('../middlewares/identifyUser');
 // define the routes
-
+// auth stastus
+// backend route
+router.get('/auth/status', identifyUser, (req, res) => {
+    res.status(200).json({ loggedIn: true}); // optionally return user info
+  });
+  
 // signup route
 router.post("/signup", signup)
 
