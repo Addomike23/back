@@ -21,8 +21,8 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://front-ymd5.onrender.com/"];
-// const allowedOrigins = "https://front-ymd5.onrender.com/"
+// const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://front-ymd5.onrender.com/"];
+const allowedOrigins = "https://front-ymd5.onrender.com/"
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl)
