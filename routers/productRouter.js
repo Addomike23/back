@@ -2,6 +2,7 @@ const express = require("express")
 const productRouter = express.Router();
 const { createProduct,
     createLatestProduct,
+    CategoryController,
     fetchProduct,
     fetchProducts,
     productDetails,
@@ -18,11 +19,23 @@ const storage = multer.diskStorage({
         return cb(null, `${Date.now()}${file.originalname}`)
     }
 })
+
+const categoryStorage = multer.diskStorage({
+    destination: "category",
+    filename: (req, file, cb) => {
+        return cb(null, `${Date.now()}${file.originalname}`)
+    }
+})
 // upload middleware
 const upload = multer({ storage: storage })
+const uploadCategory = multer({ storage: categoryStorage })
+
 
 // create product router
 productRouter.post('/upload', upload.single("image"), createProduct)
+
+// create category
+productRouter.post("/category", uploadCategory.single("image"), CategoryController)
 
 // latest product
 productRouter.post("/upload-latest-product", upload.single("image"), createLatestProduct)

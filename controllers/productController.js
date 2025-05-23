@@ -4,6 +4,7 @@ const fs = require("fs");
 
 
 
+
 // products Category Controller
 const productCategoryController = async (req, res) => {
     // destruct data from request body
@@ -231,16 +232,16 @@ const fetchProducts = async (req, res) => {
 
 const productDetails = async (req, res) => {
     try {
-      const product = await Product.findById(req.params.id);
-      if (!product) return res.status(404).json({ message: "Product not found" });
-      res.json(product);
+        const product = await product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+        res.json(product);
     } catch (err) {
-      res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error" });
     }
-  };
+};
 
-  
-  
+
+
 
 // SINGLE PRODUCT CONTROLLER
 const fetchOneProduct = async (req, res) => {
@@ -311,6 +312,27 @@ const deleteProduct = async (req, res) => {
     }
 }
 
+// category controller
+const CategoryController = async (req, res) => {
+    const { image, name } = req.body
+
+    try {
+        if(!image || !name){
+            return res.status(401).json({success: false, message: "All inputs field are required"})
+        }
+        const newCategory = new productCategory({
+            image: image,
+            category: name
+        })
+
+        await newCategory.save()
+
+        res.status(200).json({success: true, message: "New category added!"})
+    } catch (error) {
+        res.status(401).json({success: false, message: "Oops!! an error occured"})
+    }
+}
+
 
 // exports controllers
 module.exports = {
@@ -322,5 +344,6 @@ module.exports = {
     deleteProduct,
     productDetails,
     fetchLatestProduct,
+    CategoryController,
     productCategoryController
 }

@@ -63,6 +63,18 @@ app.use(
   })
 );
 
+app.use(
+  "/iamges",
+  express.static("category", {
+    setHeaders: (res, path, stat) => {
+      res.setHeader("Access-Control-Allow-Origin", "https://front-ymd5.onrender.com/"); // ✅ only one string
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      // res.setHeader("Content-Security-Policy", "img-src 'self' http://localhost:5000 data:;");
+    },
+  })
+);
+
 
 app.get('/api/welcome-text', (req, res) => {
   res.json(welcomeText)
