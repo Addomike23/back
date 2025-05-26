@@ -314,28 +314,51 @@ const deleteProduct = async (req, res) => {
 
 // category controller
 const CategoryController = async (req, res) => {
-    const { image, name } = req.body
-
     try {
-        if(!image || !name){
-            return res.status(401).json({success: false, message: "All inputs field are required"})
+        const name = req.body.name;
+        const image = req.file?.filename;
+
+        if (!image || !name) {
+            return res.status(400).json({ success: false, message: "All input fields are required" });
         }
+
         const newCategory = new productCategory({
             image: image,
             category: name
-        })
+        });
 
-        await newCategory.save()
+        await newCategory.save();
 
-        res.status(200).json({success: true, message: "New category added!"})
+        res.status(201).json({ success: true, message: "New category added!" });
     } catch (error) {
-        res.status(401).json({success: false, message: "Oops!! an error occured"})
+        console.error("Category upload error:", error);
+        res.status(500).json({ success: false, message: "Oops!! An error occurred" });
     }
-}
+};
+
+// fetch category controller
+const fetchCategoryController = async (req, res) => {
+  try {
+    const categories = await productCategory.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Categories fetched successfully",
+      data: categories,
+    });
+  } catch (error) {
+    console.error("Fetch categories error:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching categories",
+    });
+  }
+};
 
 
 // exports controllers
 module.exports = {
+    fetchCategoryController,
     createProduct,
     createLatestProduct,
     fetchProduct,

@@ -4,6 +4,7 @@ const { createProduct,
     createLatestProduct,
     CategoryController,
     fetchProduct,
+    fetchCategoryController,
     fetchProducts,
     productDetails,
     updateProduct,
@@ -37,6 +38,8 @@ productRouter.post('/upload', upload.single("image"), createProduct)
 // create category
 productRouter.post("/category", uploadCategory.single("image"), CategoryController)
 
+// fetch category
+productRouter.get("/category", fetchCategoryController)
 // latest product
 productRouter.post("/upload-latest-product", upload.single("image"), createLatestProduct)
 
